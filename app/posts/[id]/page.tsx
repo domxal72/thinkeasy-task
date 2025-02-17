@@ -1,11 +1,8 @@
-
-
-async function SinglePost({params}) {
-
-  console.log(params)
-
-  const data = await fetch(`https://frontend-test-be.stage.thinkeasy.cz/posts/${params.id}`)
-  const {id, content, title } = await data.json()
+async function SinglePost({params}: {
+  params: Promise<{ id: string }>
+} ) {
+  const data = await fetch(`https://frontend-test-be.stage.thinkeasy.cz/posts/${(await params).id}`)
+  const {content, title } = await data.json()
 
   return (
     <div>

@@ -2,8 +2,11 @@
 import React from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useCookies } from 'next-client-cookies';
 import { z } from "zod"
 import InputField from '@/components/input-field'
+import { TSignFormFields, TTokenResponse } from '@/types'
+import { request } from '@/requests'
 
 export type TFormFields = {
   email: string
@@ -11,9 +14,6 @@ export type TFormFields = {
   firstname?: string
   lastname?: string
 }
-
-
-const url = 'https://frontend-test-be.stage.thinkeasy.cz/auth/signup'
 
 export const FormFields = z
  .object({
@@ -27,61 +27,51 @@ export const FormFields = z
 
 function SignUpForm() {
 
+  const cookiesStore = useCookies()
+
   const {
     register,
     handleSubmit,
-    // watch,
     formState: { errors },
-  } = useForm<TFormFields>({
+  } = useForm<TSignFormFields>({
     resolver: zodResolver(FormFields)
   })
-  const onSubmit: SubmitHandler<TFormFields> = async (data) => {
-    const res = await fetch(url, {
+  const onSubmit: SubmitHandler<TSignFormFields> = async (data) => {
+    const resData = await request<TTokenResponse>({
+      relativeUrl: 'auth/login',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
+      data: data
     })
-    console.log(res)
+    cookiesStore.set('accessToken', resData.accessToken)
   }
 
-//   console.log(watch("example")) // watch input value by passing the name of it
-  
-
   return (
-    /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {/* register your input into the hook by invoking the "register" function */}
 
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <InputField
           type='email'
-          name="email"
-          placeholder='email'
-          register={register}
+          label='email'
           error={errors.email}
-          options={{required: true}}
+          register={register}
+          required
         />
         <InputField
           type='password'
-          name="password"
-          placeholder='password'
-          register={register}
+          label='password'
           error={errors.password}
-          options={{required: true}}
+          register={register}
+          required
         />
         <InputField
-          name="firstname"
-          placeholder='firstname'
-          register={register}
           error={errors.firstname}
+          label='firstname'
+          register={register}
         />
         <InputField
-          name="lastname"
-          placeholder='lastname'
-          register={register}
+          label='lastname'
           error={errors.lastname}
+          register={register}
         />
       </div>
 

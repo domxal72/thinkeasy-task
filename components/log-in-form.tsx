@@ -1,19 +1,11 @@
 "use client"
-import React from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useCookies } from 'next-client-cookies';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import InputField from '@/components/input-field'
-
-export type TFormFields = {
-  email: string
-  password: string
-  firstname?: string
-  lastname?: string
-}
-
-const url = 'https://frontend-test-be.stage.thinkeasy.cz/auth/login'
+import { TLoginFormFields, TTokenResponse } from '@/types'
+import { request } from '@/requests'
 
 export const FormFields = z
  .object({
@@ -31,18 +23,15 @@ function LogInForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<TFormFields>({
+  } = useForm<TLoginFormFields>({
     resolver: zodResolver(FormFields)
   })
-  const onSubmit: SubmitHandler<TFormFields> = async (data) => {
-    const res = await fetch(url, {
+  const onSubmit: SubmitHandler<TLoginFormFields> = async (data) => {
+    const resData = await request<TTokenResponse>({
+      relativeUrl: 'auth/login',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
+      data: data
     })
-    const resData = await res.json()
     cookiesStore.set('accessToken', resData.accessToken)
   }
 
@@ -51,19 +40,17 @@ function LogInForm() {
       <div>
         <InputField
           type='email'
-          name="email"
-          placeholder='email'
-          register={register}
+          label='email'
           error={errors.email}
-          options={{required: true}}
+          register={register}
+          required
         />
         <InputField
           type='password'
-          name="password"
-          placeholder='password'
-          register={register}
+          label='password'
           error={errors.password}
-          options={{required: true}}
+          register={register}
+          required
         />
       </div>
 

@@ -1,13 +1,12 @@
-import { cookies } from 'next/headers'
 import LogInForm from "@/components/log-in-form"
 
 function LogIn() {
 
-  const cookiesStore = cookies()
-  console.log(cookiesStore)
-
   return (
-    <LogInForm />
+    <div>
+      <h1>Log in page</h1>
+      <LogInForm />
+    </div>
   )
 }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
+import { CookiesProvider } from 'next-client-cookies/server';
 
 
 export const metadata: Metadata = {
@@ -17,8 +18,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Header />
-        <div className="pt-10 m-auto max-w-3xl px-4">
-          {children}
+        <div className="pt-14 m-auto max-w-3xl px-4">
+          <CookiesProvider>
+            {children}
+          </CookiesProvider>
         </div>
       </body>
     </html>

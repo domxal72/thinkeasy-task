@@ -1,10 +1,12 @@
 "use client"
-import React from 'react'
+import React, {useState} from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useCookies } from 'next-client-cookies';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import InputField from '@/components/input-field'
+import { request } from '@/requests'
+import { TPost } from '@/types';
 
 export type TPostFormFields = {
   title: string
@@ -15,13 +17,18 @@ export const FormFields = z
  .object({
   title: z.string().nonempty({message: 'title must not be empty'}),
   content: z.string().nonempty({message: 'content must not be empty'})
-,
  })
-
-const url = 'https://frontend-test-be.stage.thinkeasy.cz/posts'
 
 function CreatePost() {
   const cookiesStore = useCookies()
+  const [success, setSuccess] = useState<string>('')
+
+  const handleSuccess = (title: string) => {
+    if(title){
+      setSuccess(title)
+      setTimeout(() => setSuccess(''), 3000)
+    }
+  }
 
   const {
     register,
@@ -31,38 +38,34 @@ function CreatePost() {
     resolver: zodResolver(FormFields)
   })
   const onSubmit: SubmitHandler<TPostFormFields> = async (data) => {
-    const res = await fetch(url, {
+    const resData = await request<TPost>({
+      relativeUrl: 'posts',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${cookiesStore.get('accessToken')}` 
-      },
-      body: JSON.stringify(data)
+      token: cookiesStore.get('accessToken'),
+      data: data
     })
-    const resData = await res.json()
-    console.log(resData)
+    handleSuccess(resData.title)
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
         <InputField
-          type='title'
-          name="title"
-          placeholder='title'
-          register={register}
+          label='title'
           error={errors.title}
+          register={register}
+          required
         />
         <InputField
-          type='content'
-          name="content"
-          placeholder='content'
-          register={register}
+          label='content'
           error={errors.content}
+          register={register}
+          required
         />
       </div>
 
       <input type="submit" />
+      {success &&<span>&quot;{success}&quot; has been added..</span>}
     </form>
   )
 }

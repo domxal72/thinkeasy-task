@@ -3,7 +3,7 @@ import SignUpForm from "@/components/sign-up-form"
 function SignUp() {
   return (
     <div>
-      Sign up
+      <h1>Sign up page</h1>
       <SignUpForm />
     </div>
   )

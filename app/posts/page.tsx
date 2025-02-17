@@ -1,12 +1,10 @@
 import CreatePost from '@/components/create-post'
 import PostList from '@/components/post-list'
-import SearchPost from '@/components/search-post'
-
-import React from 'react'
+import { request } from '@/requests'
+import { TPost } from '@/types'
 
 async function Posts() {
-  const data = await fetch('https://frontend-test-be.stage.thinkeasy.cz/posts')
-  const postsData = await data.json()
+  const postsData = await request<TPost[]>({relativeUrl: 'posts'})
 
   return (
     <div>
