@@ -1,4 +1,4 @@
-
+import Heading from "@/components/heading";
 export default function PostLayout({
   children,
 }: Readonly<{
@@ -6,7 +6,7 @@ export default function PostLayout({
 }>) {
   return (
     <div>
-      <h1>Posts page</h1>
+      <Heading>Posts page</Heading>
       {children}
     </div>
 

@@ -1,16 +1,18 @@
 import { FieldError, UseFormRegister, Path, FieldValues } from "react-hook-form"
 import { HTMLInputTypeAttribute } from "react"
+import ErrorMessage from '@/components/error-message';
 
 type TInputFieldProps<T extends FieldValues> = {
   error: FieldError | undefined;
   label: Path<T>
-  type?: HTMLInputTypeAttribute
   register: UseFormRegister<T>
+  type?: HTMLInputTypeAttribute
   required?: boolean
   rest?: unknown
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-function InputField<T extends FieldValues>({error, type = "text", register, label, required, ...rest}: TInputFieldProps<T>) {
+function InputField<T extends FieldValues>({error, type = "text", register, label, required, onChange, ...rest}: TInputFieldProps<T>) {
 
   return (
     <div className='flex flex-col'>
@@ -18,10 +20,10 @@ function InputField<T extends FieldValues>({error, type = "text", register, labe
       <input
         type={type}
         className='border-2 border-gray-400 rounded md p-2 my-2'
-        {...register(label, { required })}
+        {...register(label, { required, onChange })}
         {...rest}
       />
-      {error && <span className="text-red-600">{error.message}</span>}
+      {error && <ErrorMessage>{error.message}</ErrorMessage>}
     </div>
   )
 }

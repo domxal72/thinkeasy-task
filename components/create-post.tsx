@@ -5,15 +5,17 @@ import { useCookies } from 'next-client-cookies';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import InputField from '@/components/input-field'
+import Button from '@/components/button'
+import ErrorMessage from '@/components/error-message';
 import { request } from '@/requests'
 import { TPost } from '@/types';
 
-export type TPostFormFields = {
+type TPostFormFields = {
   title: string
   content: string
 }
 
-export const FormFields = z
+const FormFields = z
  .object({
   title: z.string().nonempty({message: 'title must not be empty'}),
   content: z.string().nonempty({message: 'content must not be empty'})
@@ -33,18 +35,28 @@ function CreatePost() {
   const {
     register,
     handleSubmit,
+    setError,
+    reset,
     formState: { errors },
   } = useForm<TPostFormFields>({
     resolver: zodResolver(FormFields)
   })
-  const onSubmit: SubmitHandler<TPostFormFields> = async (data) => {
-    const resData = await request<TPost>({
+  const onSubmit: SubmitHandler<TPostFormFields> = async (formData) => {
+    const res = await request<TPost>({
       relativeUrl: 'posts',
       method: 'POST',
       token: cookiesStore.get('accessToken'),
-      data: data
+      data: formData
     })
-    handleSuccess(resData.title)
+    
+    if(res.status < 400){
+      handleSuccess(res.data.title)
+      reset()
+    } else {
+      setError('root.serverError', {
+        message: 'Something went wrong when submit',
+      });
+    }
   }
 
   return (
@@ -64,8 +76,9 @@ function CreatePost() {
         />
       </div>
 
-      <input type="submit" />
-      {success &&<span>&quot;{success}&quot; has been added..</span>}
+      <Button title='Submit' />
+      {success &&<div className='text-green-600'>&quot;{success}&quot; has been added..</div>}
+      {errors.root?.serverError && <ErrorMessage>{errors.root?.serverError.message}</ErrorMessage>}
     </form>
   )
 }

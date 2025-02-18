@@ -1,9 +1,10 @@
 import SignUpForm from "@/components/sign-up-form"
+import Heading from "@/components/heading"
 
 function SignUp() {
   return (
     <div>
-      <h1>Sign up page</h1>
+      <Heading>Sign up page</Heading>
       <SignUpForm />
     </div>
   )

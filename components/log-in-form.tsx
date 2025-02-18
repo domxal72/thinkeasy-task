@@ -4,35 +4,46 @@ import { useCookies } from 'next-client-cookies';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import InputField from '@/components/input-field'
+import Button from '@/components/button'
+import ErrorMessage from '@/components/error-message';
 import { TLoginFormFields, TTokenResponse } from '@/types'
 import { request } from '@/requests'
+import { useRouter } from 'next/navigation'
 
-export const FormFields = z
+const FormFields = z
  .object({
   email: z.string().email({message: 'email must be an valid email format'}),
-  password: z
-    .string()
-    .min(8, { message: "password must be longer than or equal to 8 characters" }),
+  password: z.string().nonempty({message: 'password required'})
  })
 
 function LogInForm() {
 
   const cookiesStore = useCookies()
 
+  const router = useRouter()
+
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<TLoginFormFields>({
     resolver: zodResolver(FormFields)
   })
-  const onSubmit: SubmitHandler<TLoginFormFields> = async (data) => {
-    const resData = await request<TTokenResponse>({
+  const onSubmit: SubmitHandler<TLoginFormFields> = async (formData) => {
+    const res = await request<TTokenResponse>({
       relativeUrl: 'auth/login',
       method: 'POST',
-      data: data
+      data: formData
     })
-    cookiesStore.set('accessToken', resData.accessToken)
+    if(res.status < 400){
+      cookiesStore.set('accessToken', res.data.accessToken)
+      router.push('/posts')
+    } else {
+      setError('root.serverError', {
+        message: 'Something went wrong when submit',
+      });
+    }
   }
 
   return (
@@ -53,8 +64,8 @@ function LogInForm() {
           required
         />
       </div>
-
-      <input type="submit" />
+      <Button title='Submit' />
+      {errors.root?.serverError && <ErrorMessage>wrong credentials</ErrorMessage>}
     </form>
   )
 }

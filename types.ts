@@ -21,3 +21,9 @@ export type TTokenResponse = {
   accessToken: "string"
   refreshToken: "string"
 }
+
+export type TResponseErrorData = {
+  message: string
+  error: string
+  statusCode: number
+}

@@ -1,4 +1,8 @@
-const BASE_URL = 'https://frontend-test-be.stage.thinkeasy.cz/'
+import axios, {AxiosError, AxiosResponse} from "axios"
+
+const instance = axios.create({
+  baseURL: 'https://frontend-test-be.stage.thinkeasy.cz/',
+});
 
 type TRequest = {
   relativeUrl: string
@@ -14,14 +18,22 @@ export async function request<T>(
     token,
     data
   }: TRequest
-): Promise<T>{
-  const res = await fetch(BASE_URL + relativeUrl, {
-    method: method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` 
-    },
-    body: data ? JSON.stringify(data) : null
-  })
-  return await res.json()
+): Promise<AxiosResponse<T>>{
+  try {
+    const res = await instance({
+      url: relativeUrl,
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
+      },
+      data: data,
+    })
+
+    return res
+  } catch (error) {
+    const err = error as AxiosError 
+    return err.response as AxiosResponse
+  }
+
 }

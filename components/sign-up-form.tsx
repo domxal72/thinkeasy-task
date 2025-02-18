@@ -3,19 +3,15 @@ import React from 'react'
 import { useForm, SubmitHandler } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useCookies } from 'next-client-cookies';
+import { useRouter } from 'next/navigation'
 import { z } from "zod"
 import InputField from '@/components/input-field'
+import Button from '@/components/button'
 import { TSignFormFields, TTokenResponse } from '@/types'
 import { request } from '@/requests'
+import ErrorMessage from '@/components/error-message';
 
-export type TFormFields = {
-  email: string
-  password: string
-  firstname?: string
-  lastname?: string
-}
-
-export const FormFields = z
+const FormFields = z
  .object({
   email: z.string().email({message: 'email must be an valid email format'}),
   password: z
@@ -28,21 +24,32 @@ export const FormFields = z
 function SignUpForm() {
 
   const cookiesStore = useCookies()
+  const router = useRouter()
 
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<TSignFormFields>({
     resolver: zodResolver(FormFields)
   })
-  const onSubmit: SubmitHandler<TSignFormFields> = async (data) => {
-    const resData = await request<TTokenResponse>({
+  const onSubmit: SubmitHandler<TSignFormFields> = async (formData) => {
+    const res = await request<TTokenResponse>({
       relativeUrl: 'auth/login',
       method: 'POST',
-      data: data
+      data: formData
     })
-    cookiesStore.set('accessToken', resData.accessToken)
+
+    if(res.status < 400){
+      cookiesStore.set('accessToken', res.data.accessToken)
+      router.push('/posts')
+    } else {
+      setError('root.serverError', {
+        message: 'Something went wrong when submit',
+      });
+      console.log(errors)
+    }
   }
 
   return (
@@ -75,7 +82,8 @@ function SignUpForm() {
         />
       </div>
 
-      <input type="submit" />
+      {errors.root?.serverError && <ErrorMessage>Sign up failed..</ErrorMessage>}
+      <Button title='Submit' />
     </form>
   )
 }

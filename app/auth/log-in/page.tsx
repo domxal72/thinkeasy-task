@@ -1,10 +1,11 @@
 import LogInForm from "@/components/log-in-form"
+import Heading from "@/components/heading"
 
 function LogIn() {
 
   return (
     <div>
-      <h1>Log in page</h1>
+      <Heading>Log in page</Heading>
       <LogInForm />
     </div>
   )
